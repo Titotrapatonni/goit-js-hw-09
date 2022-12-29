@@ -1,48 +1,49 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const formEl = document.querySelector('.form');
-const delayEl = document.querySelector('input[name=delay]');
-const stepEl = document.querySelector('input[name=step]');
-const amountEl = document.querySelector('input[name=amount]');
+
 formEl.addEventListener('submit', onSubmit);
 
 function onSubmit(evt) {
   evt.preventDefault();
-  if (
-    Number(delayEl.value) < 0 ||
-    Number(stepEl.value) < 0 ||
-    Number(amountEl.value) < 0
-  ) {
-    Notify.warning('Value cannot be negative');
-    return;
-  }
+  const {
+    elements: { delay, step, amount },
+  } = evt.currentTarget;
+
+  // if (
+  //   Number(delay.value) < 0 ||
+  //   Number(step.value) < 0 ||
+  //   Number(amount.value) < 0
+  // ) {
+  //   Notify.warning('Value cannot be negative');
+  //   return;
+  // }
   let position = 0;
-  let step = 0;
-  let delay = Number(delayEl.value);
-  for (let i = 1; i <= amountEl.value; i += 1) {
+  let nextStep = 0;
+  let nextDelay = Number(delay.value);
+  for (let i = 1; i <= amount.value; i += 1) {
     position += 1;
-    step += Number(stepEl.value);
-    createPromise(position, delay);
-    delay = Number(delayEl.value) + step;
+    nextStep += Number(step.value);
+    createPromise(position, nextDelay)
+      .then(({ position, delay }) => {
+        Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
+      })
+      .catch(({ position, delay }) => {
+        Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
+      });
+    nextDelay = Number(delay.value) + nextStep;
   }
 }
 
 function createPromise(position, delay) {
   const shouldResolve = Math.random() > 0.3;
-  const promise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (shouldResolve) {
-        resolve(`Fulfilled promise ${position} in ${delay}ms`);
+        resolve({ position, delay });
       } else {
-        reject(`Rejected promise ${position} in ${delay}ms`);
+        reject({ position, delay });
       }
     }, delay);
   });
-  promise
-    .then(value => {
-      Notify.success(value);
-    })
-    .catch(err => {
-      Notify.failure(err);
-    });
 }

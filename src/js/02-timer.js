@@ -7,10 +7,9 @@ const options = {
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose(selectedDates) {
-    finalTime = new Date(selectedDates[0].getTime());
-
-    checkTime(finalTime, new Date());
+  onClose([selectedDate] = selectedDates) {
+    finalTime = selectedDate.getTime();
+    checkTime(finalTime);
   },
 };
 
@@ -53,8 +52,8 @@ function addLeadingZero(value) {
   return String(value).padStart(2, '0');
 }
 
-function checkTime(final, current) {
-  if (final <= new Date()) {
+function checkTime(final) {
+  if (final <= Date.now()) {
     Notify.failure('Please choose a date in the future');
     startBtn.disabled = true;
   } else {
